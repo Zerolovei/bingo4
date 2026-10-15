@@ -1,0 +1,3094 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>第5回ARK3ビンゴ！Ⅴ</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    sans-serif;
+
+  text-align: center;
+  color: #333;
+
+  background-image: url("bac.png");
+  background-size: 100% auto;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-color: #dff4ff;
+
+  min-height: 100vh;
+
+  padding:
+    max(6px, env(safe-area-inset-top))
+    2px
+    max(20px, env(safe-area-inset-bottom));
+}
+
+/* =========================
+   タイトル
+========================= */
+
+h1 {
+  margin: 5px 0 4px;
+  font-size: clamp(18px, 5vw, 29px);
+  font-weight: 900;
+  color: white;
+
+  text-shadow:
+    0 3px 5px rgba(0,0,0,.9),
+    0 0 10px rgba(0,0,0,.6);
+}
+
+/* =========================
+   上部ボタン
+========================= */
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px;
+  margin: 4px auto;
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+
+  padding: 9px 13px;
+
+  font-size: 11px;
+  font-weight: bold;
+
+  color: white;
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.28);
+
+  transition:
+    transform .12s ease,
+    opacity .2s ease,
+    filter .2s ease;
+}
+
+button:active {
+  transform: scale(.94);
+}
+
+#newCard {
+  background:
+    linear-gradient(
+      135deg,
+      #ff65a7,
+      #9a6aff
+    );
+}
+
+#startCard {
+  background:
+    linear-gradient(
+      135deg,
+      #42c978,
+      #13975c
+    );
+}
+
+#newCard.disabled,
+#startCard.started {
+  opacity: .45;
+  filter: grayscale(.55);
+  cursor: not-allowed;
+}
+
+#negiButton {
+  background:
+    linear-gradient(
+      135deg,
+      #54d774,
+      #17964c
+    );
+}
+
+#negiButton.active {
+  background:
+    linear-gradient(
+      135deg,
+      #00e4bc,
+      #00a3d7
+    );
+
+  box-shadow:
+    0 0 10px #00f2d2,
+    0 0 20px rgba(0,220,255,.8);
+}
+
+#soundButton {
+  background:
+    linear-gradient(
+      135deg,
+      #42a5ff,
+      #536dfe
+    );
+}
+
+/* =========================
+   当たりカウンター
+========================= */
+
+#luckyCounter {
+  display: inline-block;
+
+  margin: 3px auto;
+  padding: 5px 12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.90);
+
+  color: #7a4b00;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  box-shadow:
+    0 3px 8px rgba(0,0,0,.22);
+}
+
+/* =========================
+   検索
+========================= */
+
+.search-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+  margin: 3px auto 0;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: bold;
+
+  text-shadow:
+    0 2px 4px rgba(0,0,0,.9);
+}
+
+#panelSearch {
+  max-width: 195px;
+
+  padding: 6px 8px;
+
+  border:
+    2px solid rgba(255,255,255,.85);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255,255,255,.95);
+
+  color: #222;
+
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* =========================
+   BINGO文字
+========================= */
+
+#bingo {
+  min-height: 34px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 0 auto;
+
+  font-size:
+    clamp(20px, 6vw, 34px);
+
+  font-weight: 900;
+
+  color: white;
+
+  text-shadow:
+    0 3px 5px rgba(0,0,0,.95),
+    0 0 12px rgba(255,0,100,.9);
+}
+
+/* =========================
+   盤面
+========================= */
+
+#board {
+  display: grid;
+
+  grid-template-columns:
+    repeat(9, minmax(0, 1fr));
+
+  gap: 2px;
+
+  width:
+    min(99vw, 720px);
+
+  margin: 0 auto;
+  padding: 4px;
+
+  border-radius: 14px;
+
+  background:
+    rgba(255,255,255,.25);
+
+  box-shadow:
+    0 5px 20px rgba(0,0,0,.38);
+
+  backdrop-filter:
+    blur(1.5px);
+}
+
+/* =========================
+   マス
+========================= */
+
+.cell {
+  aspect-ratio: 1 / 1;
+
+  min-width: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  padding: 1px;
+
+  border-radius: 5px;
+
+  background:
+    rgba(255,255,255,.84);
+
+  border:
+    1px solid rgba(255,255,255,.95);
+
+  font-size:
+    clamp(6.4px, 1.75vw, 11px);
+
+  font-weight: 700;
+  line-height: 1.08;
+
+  overflow-wrap: anywhere;
+
+  user-select: none;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 0 4px rgba(255,255,255,.8);
+
+  transition:
+    transform .12s ease,
+    background .18s ease,
+    color .18s ease,
+    box-shadow .18s ease;
+}
+
+.cell:active {
+  transform: scale(.92);
+}
+
+/* 達成済み */
+
+.cell.checked {
+  background:
+    rgba(48,190,95,.94);
+
+  color: white;
+
+  text-shadow:
+    0 1px 3px rgba(0,0,0,.65);
+}
+
+/* 最後に開いたマス */
+
+.cell.last {
+  background:
+    rgba(255,214,38,.97);
+
+  color: #222;
+
+  text-shadow: none;
+
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.55),
+    0 0 9px rgba(255,220,0,.8);
+}
+
+/* リーチ */
+
+.cell.reach {
+  background:
+    rgba(157,92,255,.96);
+
+  color: white;
+
+  text-shadow:
+    0 1px 3px rgba(0,0,0,.65);
+
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.4),
+    0 0 9px rgba(157,92,255,.8);
+}
+
+/* BINGO */
+
+.cell.bingo-cell {
+  background:
+    rgba(255,61,155,.97);
+
+  color: white;
+
+  text-shadow:
+    0 1px 3px rgba(0,0,0,.7);
+
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.45),
+    0 0 10px rgba(255,40,145,.85);
+}
+
+/* FREE */
+
+.cell.free {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(67,198,255,.97),
+      rgba(157,105,255,.97)
+    );
+
+  color: white;
+  font-weight: 900;
+}
+
+.cell.free.bingo-cell {
+  background:
+    rgba(255,61,155,.97);
+}
+
+/* =========================
+   検索青発光
+========================= */
+
+.cell.search-hit {
+  position: relative;
+
+  outline:
+    3px solid #27c8ff;
+
+  outline-offset: -3px;
+
+  box-shadow:
+    inset 0 0 0 2px white,
+    0 0 10px #21c8ff,
+    0 0 20px #21c8ff;
+
+  z-index: 3;
+}
+
+/* =========================
+   ネギ遠隔対象
+========================= */
+
+.cell.negi-target {
+  position: relative;
+
+  outline:
+    3px solid #00ffd5;
+
+  outline-offset: -3px;
+
+  z-index: 5;
+
+  animation:
+    negiGlow
+    .65s
+    ease-in-out
+    infinite
+    alternate;
+}
+
+@keyframes negiGlow {
+  from {
+    box-shadow:
+      inset 0 0 0 2px white,
+      0 0 8px #00ffd5;
+  }
+
+  to {
+    box-shadow:
+      inset 0 0 0 2px white,
+      0 0 15px #00ffd5,
+      0 0 28px #00bfff;
+  }
+}
+
+/* =========================
+   当たり演出
+========================= */
+
+#luckyOverlay {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  z-index: 9999;
+
+  background:
+    rgba(0,0,0,.28);
+
+  pointer-events: none;
+}
+
+#luckyOverlay.show {
+  display: flex;
+
+  animation:
+    overlayFade
+    1.8s
+    ease
+    forwards;
+}
+
+#luckyImage {
+  width:
+    min(78vw, 380px);
+
+  max-height:
+    60vh;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 8px 14px rgba(0,0,0,.4)
+    );
+
+  animation:
+    luckyPop
+    .4s
+    cubic-bezier(.2,1.6,.4,1);
+}
+
+#luckyText {
+  margin-top: -5px;
+
+  font-size:
+    clamp(32px, 10vw, 58px);
+
+  font-weight: 1000;
+
+  color: #fff;
+
+  -webkit-text-stroke:
+    2px #ff8c00;
+
+  text-shadow:
+    0 4px 0 #ff5e00,
+    0 0 12px #fff,
+    0 0 25px #ffd700;
+}
+
+#luckySubText {
+  margin-top: 3px;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  color: white;
+
+  text-shadow:
+    0 2px 5px black;
+}
+
+@keyframes luckyPop {
+  0% {
+    transform:
+      scale(.2)
+      rotate(-10deg);
+
+    opacity: 0;
+  }
+
+  75% {
+    transform:
+      scale(1.08)
+      rotate(2deg);
+  }
+
+  100% {
+    transform:
+      scale(1)
+      rotate(0);
+  }
+}
+
+@keyframes overlayFade {
+  0% {
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  78% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* =========================
+   BINGO 小林さん演出
+========================= */
+
+#bingoOverlay {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+
+  justify-content: center;
+  align-items: center;
+
+  z-index: 10000;
+
+  background:
+    rgba(255,255,255,0);
+
+  pointer-events: none;
+}
+
+#bingoOverlay.show {
+  display: flex;
+
+  animation:
+    bingoScreenFlash
+    2.1s
+    ease
+    forwards;
+}
+
+#bingoImage {
+  width:
+    min(88vw, 430px);
+
+  max-height:
+    78vh;
+
+  object-fit: contain;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 0 20px rgba(255,255,255,.95),
+    0 0 45px rgba(255,220,0,.9);
+
+  animation:
+    bingoPop
+    .45s
+    cubic-bezier(.2,1.6,.4,1);
+}
+
+@keyframes bingoPop {
+  0% {
+    transform:
+      scale(.15)
+      rotate(-8deg);
+
+    opacity: 0;
+  }
+
+  65% {
+    transform:
+      scale(1.08)
+      rotate(2deg);
+
+    opacity: 1;
+  }
+
+  100% {
+    transform:
+      scale(1)
+      rotate(0);
+
+    opacity: 1;
+  }
+}
+
+@keyframes bingoScreenFlash {
+  0% {
+    opacity: 0;
+
+    background:
+      rgba(255,255,255,.95);
+  }
+
+  10% {
+    opacity: 1;
+
+    background:
+      rgba(255,255,255,.75);
+  }
+
+  25% {
+    background:
+      rgba(255,220,60,.22);
+  }
+
+  80% {
+    opacity: 1;
+
+    background:
+      rgba(0,0,0,.18);
+  }
+
+  100% {
+    opacity: 0;
+
+    background:
+      rgba(0,0,0,0);
+  }
+}
+
+/* =========================
+   全データリセット
+========================= */
+
+.reset-area {
+  margin:
+    18px auto
+    30px;
+}
+
+#resetButton {
+  padding:
+    9px 18px;
+
+  background:
+    rgba(50,50,50,.82);
+
+  color: white;
+
+  font-size: 11px;
+
+  border:
+    1px solid rgba(255,255,255,.55);
+
+  opacity: .8;
+}
+
+/* =========================
+   スマホ
+========================= */
+
+@media (max-width: 600px) {
+
+  body {
+    background-size: 100% auto;
+    background-position: center top;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  button {
+    padding: 8px 9px;
+    font-size: 10px;
+  }
+
+  #board {
+    width: 99vw;
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .cell {
+    font-size: 6.6px;
+    border-radius: 4px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>
+  第5回ARK3ビンゴ！Ⅴ
+</h1>
+
+<div class="controls">
+
+  <button
+    id="newCard"
+    onclick="requestNewBoard()">
+    🎲 カード再生成
+  </button>
+
+  <button
+    id="startCard"
+    onclick="startCardGame()">
+    🔒 このカードで開始！
+  </button>
+
+  <button
+    id="negiButton"
+    onclick="toggleNegiMode()">
+    🥬 ネギ配達
+  </button>
+
+  <button
+    id="soundButton"
+    onclick="toggleSound()">
+    🔊 音ON
+  </button>
+
+</div>
+
+<div id="luckyCounter">
+  🎯 あたり：0回
+</div>
+
+<div class="search-area">
+
+  🔍
+
+  <select
+    id="panelSearch"
+    onchange="highlightSearch()">
+
+    <option value="">
+      パネル検索
+    </option>
+
+  </select>
+
+</div>
+
+<div id="bingo"></div>
+
+<div id="board"></div>
+
+<!-- リセット -->
+
+<div class="reset-area">
+
+  <button
+    id="resetButton"
+    onclick="resetEverything()">
+
+    🔄 全データリセット
+
+  </button>
+
+</div>
+
+
+<!-- =========================
+     当たり演出
+========================= -->
+
+<div id="luckyOverlay">
+
+  <img
+    id="luckyImage"
+    src="negi.png"
+    alt="">
+
+  <div id="luckyText">
+    あたりー！
+  </div>
+
+  <div id="luckySubText"></div>
+
+</div>
+
+
+<!-- =========================
+     BINGO 小林さん
+========================= -->
+
+<div id="bingoOverlay">
+
+  <img
+    id="bingoImage"
+    src="BINGO.png"
+    alt="BINGO">
+
+</div>
+
+
+<!-- =========================
+     音源
+========================= -->
+
+<audio
+  id="reachSound"
+  preload="auto"
+  src="syuuka.mp3">
+</audio>
+
+<audio
+  id="bingoSound"
+  preload="auto"
+  src="sokuji.mp3">
+</audio>
+
+
+<script>
+
+/* ==================================================
+   候補
+================================================== */
+
+const areaItems = [
+  "笹塚",
+  "南台",
+  "千駄ヶ谷",
+  "松濤",
+  "幡ヶ谷",
+  "松原",
+  "西新宿",
+  "西原",
+  "富ヶ谷",
+  "和田",
+  "堀之内",
+  "方南町",
+  "渋谷本町",
+  "中野本町",
+  "元代々木",
+  "弥生町",
+  "羽根木",
+  "大原",
+  "代々木",
+  "北沢",
+  "代田",
+  "下高井戸",
+  "初台",
+  "永福町",
+  "和泉",
+  "上原",
+  "大山",
+  "大宮",
+  "西永福",
+  "神山町"
+];
+
+const normalItems = [
+  "タワマン",
+  "ネギ",
+
+  "アップル1",
+  "アップル2",
+  "アップル3",
+  "アップル4",
+
+  "バナナ1",
+  "バナナ2",
+  "バナナ3",
+  "バナナ4",
+
+  "キャロット1",
+  "キャロット2",
+  "キャロット3",
+  "キャロット4",
+
+  "荷物１つ",
+  "荷物２つ",
+  "荷物３つ",
+  "荷物４つ",
+
+  "階段２F",
+  "階段３F",
+  "階段４F",
+  "階段５F",
+  "階段∞",
+
+  "長距離3.8",
+  "近距離0.5",
+
+  "戸建",
+  "店舗",
+  "持ち帰り",
+  "配達なし",
+  "雨配達",
+
+  "オートロック２個以上"
+];
+
+
+/* スタッフ */
+
+const staffItems = [
+  "野田さん！",
+  "金子さん！",
+  "矢田部さん！",
+  "萩原さん！"
+];
+
+
+/* ステーション */
+
+const stationItems = [
+  "五反田",
+  "新橋",
+  "麻布十番",
+  "南青山",
+  "三軒茶屋",
+  "自由が丘",
+  "北千束",
+  "大森",
+  "千歳船橋"
+];
+
+
+const fullPool = [
+  ...areaItems,
+  ...normalItems,
+  ...staffItems,
+  ...stationItems
+];
+
+
+/* ==================================================
+   第5回専用 保存キー
+================================================== */
+
+const BOARD_KEY =
+  "ark3_bingo_fifth_board_v1";
+
+const CHECK_KEY =
+  "ark3_bingo_fifth_checks_v1";
+
+const LAST_KEY =
+  "ark3_bingo_fifth_last_v1";
+
+const START_KEY =
+  "ark3_bingo_fifth_started_v1";
+
+const SOUND_KEY =
+  "ark3_bingo_fifth_sound_v1";
+
+const LUCKY_KEY =
+  "ark3_bingo_fifth_lucky_count_v1";
+
+const DRAWN_KEY =
+  "ark3_bingo_fifth_drawn_cells_v1";
+
+
+/* ==================================================
+   状態
+================================================== */
+
+let negiMode = false;
+
+let luckyTimer = null;
+
+let bingoAnimationTimer = null;
+
+
+/* ==================================================
+   9×9 BINGOライン
+   横9 + 縦9 + 斜め2 = 20
+================================================== */
+
+const lines = [];
+
+
+/* 横 */
+
+for (let r = 0; r < 9; r++) {
+
+  const line = [];
+
+  for (let c = 0; c < 9; c++) {
+
+    line.push(
+      r * 9 + c
+    );
+
+  }
+
+  lines.push(line);
+}
+
+
+/* 縦 */
+
+for (let c = 0; c < 9; c++) {
+
+  const line = [];
+
+  for (let r = 0; r < 9; r++) {
+
+    line.push(
+      r * 9 + c
+    );
+
+  }
+
+  lines.push(line);
+}
+
+
+/* 斜め */
+
+lines.push([
+  0,10,20,30,40,50,60,70,80
+]);
+
+lines.push([
+  8,16,24,32,40,48,56,64,72
+]);
+
+
+/* ==================================================
+   基本
+================================================== */
+
+function randomFrom(array) {
+
+  return array[
+    Math.floor(
+      Math.random() *
+      array.length
+    )
+  ];
+
+}
+
+
+function shuffle(array) {
+
+  for (
+    let i = array.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+    [
+      array[i],
+      array[j]
+    ] = [
+      array[j],
+      array[i]
+    ];
+
+  }
+
+  return array;
+}
+
+
+/* ==================================================
+   このカードで開始
+================================================== */
+
+function isStarted() {
+
+  return (
+    localStorage.getItem(
+      START_KEY
+    ) === "started"
+  );
+
+}
+
+
+function startCardGame() {
+
+  if (isStarted()) {
+    return;
+  }
+
+
+  const ok =
+    confirm(
+      "このカードで開始しますか？\n\n開始するとカードの再生成はできません。"
+    );
+
+
+  if (!ok) {
+    return;
+  }
+
+
+  localStorage.setItem(
+    START_KEY,
+    "started"
+  );
+
+
+  updateStartDisplay();
+}
+
+
+function updateStartDisplay() {
+
+  const newCard =
+    document.getElementById(
+      "newCard"
+    );
+
+  const startCard =
+    document.getElementById(
+      "startCard"
+    );
+
+
+  if (isStarted()) {
+
+    newCard.textContent =
+      "🔒 カード再生成";
+
+    newCard.classList.add(
+      "disabled"
+    );
+
+
+    startCard.textContent =
+      "🔒 カード確定済み！";
+
+    startCard.classList.add(
+      "started"
+    );
+
+  }
+
+  else {
+
+    newCard.textContent =
+      "🎲 カード再生成";
+
+    newCard.classList.remove(
+      "disabled"
+    );
+
+
+    startCard.textContent =
+      "🔒 このカードで開始！";
+
+    startCard.classList.remove(
+      "started"
+    );
+
+  }
+}
+
+
+/* ==================================================
+   再生成
+================================================== */
+
+function requestNewBoard() {
+
+  if (isStarted()) {
+    return;
+  }
+
+  generateNewBoard();
+}
+
+
+/* ==================================================
+   新規カード
+
+   ・9×9
+   ・中央FREE
+   ・エリア最低30枚
+   ・ステーション最低4種類
+   ・同一ステーション重複なし
+   ・スタッフ最低1枚
+================================================== */
+
+function generateNewBoard() {
+
+  const selected = [];
+
+
+  /* エリア30枚保証 */
+
+  for (
+    let i = 0;
+    i < 30;
+    i++
+  ) {
+
+    selected.push(
+      randomFrom(
+        areaItems
+      )
+    );
+
+  }
+
+
+  /* ステーション最低4種類保証 */
+
+  const guaranteedStations =
+    shuffle(
+      [...stationItems]
+    ).slice(
+      0,
+      4
+    );
+
+
+  selected.push(
+    ...guaranteedStations
+  );
+
+
+  const usedStations =
+    new Set(
+      guaranteedStations
+    );
+
+
+  /* 残りを全候補から抽選 */
+
+  while (
+    selected.length < 80
+  ) {
+
+    const picked =
+      randomFrom(
+        fullPool
+      );
+
+
+    /*
+      ステーションは
+      同じものを2枚入れない
+    */
+
+    if (
+      stationItems.includes(
+        picked
+      )
+    ) {
+
+      if (
+        usedStations.has(
+          picked
+        )
+      ) {
+
+        continue;
+      }
+
+
+      usedStations.add(
+        picked
+      );
+
+    }
+
+
+    selected.push(
+      picked
+    );
+
+  }
+
+
+  /* スタッフ最低1枚保証 */
+
+  const hasStaff =
+    selected.some(
+      item =>
+        staffItems.includes(
+          item
+        )
+    );
+
+
+  if (!hasStaff) {
+
+    /*
+      先頭30枚＝エリア保証
+      30〜33＝ステーション保証
+
+      34〜79から交換
+    */
+
+    const replaceIndex =
+      34 +
+      Math.floor(
+        Math.random() * 46
+      );
+
+
+    selected[replaceIndex] =
+      randomFrom(
+        staffItems
+      );
+
+  }
+
+
+  /* 全体をシャッフル */
+
+  shuffle(selected);
+
+
+  /* 中央FREE */
+
+  selected.splice(
+    40,
+    0,
+    "FREE"
+  );
+
+
+  const checked =
+    new Array(81)
+      .fill(false);
+
+
+  checked[40] = true;
+
+
+  /*
+    各マスの抽選済み記録
+  */
+
+  const drawn =
+    new Array(81)
+      .fill(false);
+
+
+  /* FREEでは抽選しない */
+
+  drawn[40] = true;
+
+
+  localStorage.setItem(
+    BOARD_KEY,
+    JSON.stringify(
+      selected
+    )
+  );
+
+
+  localStorage.setItem(
+    CHECK_KEY,
+    JSON.stringify(
+      checked
+    )
+  );
+
+
+  localStorage.setItem(
+    DRAWN_KEY,
+    JSON.stringify(
+      drawn
+    )
+  );
+
+
+  localStorage.setItem(
+    LUCKY_KEY,
+    "0"
+  );
+
+
+  localStorage.removeItem(
+    LAST_KEY
+  );
+
+
+  localStorage.removeItem(
+    START_KEY
+  );
+
+
+  negiMode = false;
+
+
+  renderBoard(
+    selected,
+    checked,
+    null
+  );
+
+
+  updateLuckyCounter();
+
+  updateStartDisplay();
+
+  updateNegiDisplay();
+}
+
+
+/* ==================================================
+   盤面表示
+================================================== */
+
+function renderBoard(
+  boardData,
+  checkedData,
+  lastIndex
+) {
+
+  const board =
+    document.getElementById(
+      "board"
+    );
+
+
+  board.innerHTML = "";
+
+
+  boardData.forEach(
+    (item, index) => {
+
+
+      const cell =
+        document.createElement(
+          "div"
+        );
+
+
+      cell.classList.add(
+        "cell"
+      );
+
+
+      cell.dataset.index =
+        index;
+
+
+      cell.dataset.item =
+        item;
+
+
+      if (index === 40) {
+
+        cell.textContent =
+          "FREE";
+
+
+        cell.classList.add(
+          "free"
+        );
+
+      }
+
+
+      else if (
+        item ===
+        "オートロック２個以上"
+      ) {
+
+        cell.innerHTML =
+          "オートロック<br>２個以上";
+
+      }
+
+
+      else {
+
+        cell.textContent =
+          item;
+
+      }
+
+
+      if (index !== 40) {
+
+        cell.addEventListener(
+          "click",
+          function () {
+
+            handleCellClick(
+              index
+            );
+
+          }
+        );
+
+      }
+
+
+      board.appendChild(
+        cell
+      );
+
+    }
+  );
+
+
+  updateColors(
+    checkedData,
+    lastIndex
+  );
+
+
+  highlightSearch();
+
+  updateNegiTargets();
+}
+
+
+/* ==================================================
+   マスクリック
+================================================== */
+
+function handleCellClick(index) {
+
+  const boardData =
+    getBoard();
+
+  const checked =
+    getChecked();
+
+
+  /*
+    ネギ遠隔モード中
+  */
+
+  if (negiMode) {
+
+    const item =
+      boardData[index];
+
+
+    if (
+      stationItems.includes(
+        item
+      ) &&
+      !checked[index]
+    ) {
+
+      openCell(index);
+
+
+      negiMode = false;
+
+
+      updateNegiDisplay();
+
+      updateNegiTargets();
+    }
+
+
+    return;
+  }
+
+
+  /*
+    通常操作
+  */
+
+  if (checked[index]) {
+
+    checked[index] = false;
+
+
+    if (
+      getLastIndex() ===
+      index
+    ) {
+
+      localStorage.removeItem(
+        LAST_KEY
+      );
+
+    }
+
+
+    localStorage.setItem(
+      CHECK_KEY,
+      JSON.stringify(
+        checked
+      )
+    );
+
+
+    updateColors(
+      checked,
+      getLastIndex()
+    );
+
+
+    highlightSearch();
+
+  }
+
+  else {
+
+    openCell(index);
+
+  }
+}
+
+
+/* ==================================================
+   未達成 → 達成
+================================================== */
+
+function openCell(index) {
+
+  const checked =
+    getChecked();
+
+
+  /*
+    変更前のライン状態
+  */
+
+  const beforeState =
+    getLineState(
+      checked
+    );
+
+
+  checked[index] = true;
+
+  checked[40] = true;
+
+
+  localStorage.setItem(
+    LAST_KEY,
+    String(index)
+  );
+
+
+  localStorage.setItem(
+    CHECK_KEY,
+    JSON.stringify(
+      checked
+    )
+  );
+
+
+  /*
+    1マスにつき初回だけ
+    25%抽選
+  */
+
+  runLuckyDrawOnce(
+    index
+  );
+
+
+  updateColors(
+    checked,
+    index
+  );
+
+
+  /*
+    変更後のライン状態
+  */
+
+  const afterState =
+    getLineState(
+      checked
+    );
+
+
+  /*
+    リーチ/BINGOイベント
+  */
+
+  handleLineEvent(
+    beforeState,
+    afterState
+  );
+
+
+  highlightSearch();
+}
+
+
+/* ==================================================
+   ネギ遠隔
+================================================== */
+
+function toggleNegiMode() {
+
+  negiMode =
+    !negiMode;
+
+
+  updateNegiDisplay();
+
+  updateNegiTargets();
+}
+
+
+function updateNegiDisplay() {
+
+  const button =
+    document.getElementById(
+      "negiButton"
+    );
+
+
+  if (negiMode) {
+
+    button.textContent =
+      "🥬 遠隔モード中";
+
+    button.classList.add(
+      "active"
+    );
+
+  }
+
+  else {
+
+    button.textContent =
+      "🥬 ネギ配達";
+
+    button.classList.remove(
+      "active"
+    );
+
+  }
+}
+
+
+function updateNegiTargets() {
+
+  const cells =
+    document.querySelectorAll(
+      ".cell"
+    );
+
+
+  const checked =
+    getChecked();
+
+
+  cells.forEach(
+    (cell, index) => {
+
+
+      cell.classList.remove(
+        "negi-target"
+      );
+
+
+      if (
+        negiMode &&
+        stationItems.includes(
+          cell.dataset.item
+        ) &&
+        !checked[index]
+      ) {
+
+        cell.classList.add(
+          "negi-target"
+        );
+
+      }
+
+    }
+  );
+}
+
+
+/* ==================================================
+   ラッキー抽選
+================================================== */
+
+function getDrawnCells() {
+
+  let drawn;
+
+
+  try {
+
+    drawn =
+      JSON.parse(
+        localStorage.getItem(
+          DRAWN_KEY
+        )
+      );
+
+  }
+
+  catch (e) {
+
+    drawn = null;
+
+  }
+
+
+  if (
+    !Array.isArray(
+      drawn
+    ) ||
+    drawn.length !== 81
+  ) {
+
+    drawn =
+      new Array(81)
+        .fill(false);
+
+
+    drawn[40] = true;
+
+  }
+
+
+  return drawn;
+}
+
+
+function runLuckyDrawOnce(index) {
+
+  const drawn =
+    getDrawnCells();
+
+
+  /*
+    同じマスでは
+    2回抽選しない
+  */
+
+  if (drawn[index]) {
+    return;
+  }
+
+
+  drawn[index] = true;
+
+
+  localStorage.setItem(
+    DRAWN_KEY,
+    JSON.stringify(
+      drawn
+    )
+  );
+
+
+  /*
+    当たり確率 1/4
+  */
+
+  const hit =
+    Math.random() < 0.25;
+
+
+  if (!hit) {
+    return;
+  }
+
+
+  let count =
+    Number(
+      localStorage.getItem(
+        LUCKY_KEY
+      ) || "0"
+    );
+
+
+  count++;
+
+
+  localStorage.setItem(
+    LUCKY_KEY,
+    String(count)
+  );
+
+
+  updateLuckyCounter();
+
+
+  showLuckyAnimation(
+    count
+  );
+}
+
+
+/* ==================================================
+   当たりカウンター
+================================================== */
+
+function updateLuckyCounter() {
+
+  const count =
+    Number(
+      localStorage.getItem(
+        LUCKY_KEY
+      ) || "0"
+    );
+
+
+  document.getElementById(
+    "luckyCounter"
+  ).textContent =
+    "🎯 あたり：" +
+    count +
+    "回";
+}
+
+
+/* ==================================================
+   当たり演出
+
+   通常
+   → negi.png お嬢
+
+   5・10・15・20……
+   → kirakira.png くまねちゃん
+================================================== */
+
+function showLuckyAnimation(count) {
+
+  const overlay =
+    document.getElementById(
+      "luckyOverlay"
+    );
+
+
+  const image =
+    document.getElementById(
+      "luckyImage"
+    );
+
+
+  const text =
+    document.getElementById(
+      "luckyText"
+    );
+
+
+  const sub =
+    document.getElementById(
+      "luckySubText"
+    );
+
+
+  /*
+    5回ごとにくまねちゃん
+  */
+
+  if (count % 5 === 0) {
+
+    image.src =
+      "kirakira.png";
+
+
+    text.textContent =
+      "✨ あたりー！ ✨";
+
+
+    sub.textContent =
+      count +
+      "回目！";
+
+  }
+
+  else {
+
+    image.src =
+      "negi.png";
+
+
+    text.textContent =
+      "あたりー！";
+
+
+    sub.textContent =
+      count +
+      "回目！";
+
+  }
+
+
+  overlay.classList.remove(
+    "show"
+  );
+
+
+  void overlay.offsetWidth;
+
+
+  overlay.classList.add(
+    "show"
+  );
+
+
+  clearTimeout(
+    luckyTimer
+  );
+
+
+  luckyTimer =
+    setTimeout(
+      function () {
+
+        overlay.classList.remove(
+          "show"
+        );
+
+      },
+      1800
+    );
+}
+
+
+/* ==================================================
+   BINGO 小林さん演出
+================================================== */
+
+function showBingoAnimation() {
+
+  const overlay =
+    document.getElementById(
+      "bingoOverlay"
+    );
+
+
+  overlay.classList.remove(
+    "show"
+  );
+
+
+  void overlay.offsetWidth;
+
+
+  overlay.classList.add(
+    "show"
+  );
+
+
+  clearTimeout(
+    bingoAnimationTimer
+  );
+
+
+  bingoAnimationTimer =
+    setTimeout(
+      function () {
+
+        overlay.classList.remove(
+          "show"
+        );
+
+      },
+      2100
+    );
+}
+
+
+/* ==================================================
+   音ON/OFF
+================================================== */
+
+function isSoundOn() {
+
+  const value =
+    localStorage.getItem(
+      SOUND_KEY
+    );
+
+
+  /*
+    初回はON
+  */
+
+  return value !== "off";
+}
+
+
+function toggleSound() {
+
+  if (isSoundOn()) {
+
+    localStorage.setItem(
+      SOUND_KEY,
+      "off"
+    );
+
+  }
+
+  else {
+
+    localStorage.setItem(
+      SOUND_KEY,
+      "on"
+    );
+
+  }
+
+
+  updateSoundDisplay();
+}
+
+
+function updateSoundDisplay() {
+
+  const button =
+    document.getElementById(
+      "soundButton"
+    );
+
+
+  if (isSoundOn()) {
+
+    button.textContent =
+      "🔊 音ON";
+
+  }
+
+  else {
+
+    button.textContent =
+      "🔇 音OFF";
+
+  }
+}
+
+
+/* ==================================================
+   ライン状態
+================================================== */
+
+function getLineState(checked) {
+
+  let bingoCount = 0;
+
+  let reachCount = 0;
+
+
+  lines.forEach(
+    line => {
+
+
+      const checkedCount =
+        line.filter(
+          index =>
+            checked[index]
+        ).length;
+
+
+      if (checkedCount === 9) {
+
+        bingoCount++;
+
+      }
+
+      else if (checkedCount === 8) {
+
+        reachCount++;
+
+      }
+
+    }
+  );
+
+
+  return {
+    bingoCount,
+    reachCount
+  };
+}
+
+
+/* ==================================================
+   リーチ / BINGO イベント
+
+   新規リーチ
+   → syuuka.mp3
+
+   新規BINGO
+   → sokuji.mp3
+   → BINGO.png
+   → 画面発光
+
+   同時の場合はBINGO優先
+================================================== */
+
+function handleLineEvent(
+  before,
+  after
+) {
+
+  /*
+    新しいBINGO
+  */
+
+  if (
+    after.bingoCount >
+    before.bingoCount
+  ) {
+
+    if (isSoundOn()) {
+
+      playSound(
+        "bingoSound"
+      );
+
+    }
+
+
+    showBingoAnimation();
+
+
+    return;
+  }
+
+
+  /*
+    新しいリーチ
+  */
+
+  if (
+    after.reachCount >
+    before.reachCount
+  ) {
+
+    if (isSoundOn()) {
+
+      playSound(
+        "reachSound"
+      );
+
+    }
+
+  }
+}
+
+
+function playSound(id) {
+
+  const audio =
+    document.getElementById(
+      id
+    );
+
+
+  if (!audio) {
+    return;
+  }
+
+
+  try {
+
+    audio.pause();
+
+    audio.currentTime = 0;
+
+
+    const promise =
+      audio.play();
+
+
+    if (promise) {
+
+      promise.catch(
+        function () {}
+      );
+
+    }
+
+  }
+
+  catch (e) {}
+}
+
+
+/* ==================================================
+   保存データ取得
+================================================== */
+
+function getBoard() {
+
+  try {
+
+    const board =
+      JSON.parse(
+        localStorage.getItem(
+          BOARD_KEY
+        )
+      );
+
+
+    if (
+      Array.isArray(
+        board
+      ) &&
+      board.length === 81
+    ) {
+
+      return board;
+
+    }
+
+  }
+
+  catch (e) {}
+
+
+  return [];
+}
+
+
+function getChecked() {
+
+  let checked;
+
+
+  try {
+
+    checked =
+      JSON.parse(
+        localStorage.getItem(
+          CHECK_KEY
+        )
+      );
+
+  }
+
+  catch (e) {
+
+    checked = null;
+
+  }
+
+
+  if (
+    !Array.isArray(
+      checked
+    ) ||
+    checked.length !== 81
+  ) {
+
+    checked =
+      new Array(81)
+        .fill(false);
+
+  }
+
+
+  checked[40] = true;
+
+
+  return checked;
+}
+
+
+function getLastIndex() {
+
+  const value =
+    localStorage.getItem(
+      LAST_KEY
+    );
+
+
+  if (value === null) {
+    return null;
+  }
+
+
+  const number =
+    Number(value);
+
+
+  if (
+    Number.isInteger(
+      number
+    ) &&
+    number >= 0 &&
+    number < 81
+  ) {
+
+    return number;
+
+  }
+
+
+  return null;
+}
+
+
+/* ==================================================
+   色更新
+================================================== */
+
+function updateColors(
+  checked,
+  lastIndex
+) {
+
+  const cells =
+    [
+      ...document.querySelectorAll(
+        ".cell"
+      )
+    ];
+
+
+  cells.forEach(
+    (cell, index) => {
+
+
+      cell.classList.remove(
+        "checked",
+        "last",
+        "reach",
+        "bingo-cell"
+      );
+
+
+      if (index === 40) {
+
+        cell.classList.add(
+          "free",
+          "checked"
+        );
+
+      }
+
+      else if (
+        checked[index]
+      ) {
+
+        cell.classList.add(
+          "checked"
+        );
+
+      }
+
+    }
+  );
+
+
+  /* 完成ライン */
+
+  const completedLines =
+    lines.filter(
+      line =>
+        line.every(
+          index =>
+            checked[index]
+        )
+    );
+
+
+  const bingoCells =
+    new Set();
+
+
+  completedLines.forEach(
+    line => {
+
+      line.forEach(
+        index =>
+          bingoCells.add(
+            index
+          )
+      );
+
+    }
+  );
+
+
+  /* リーチ */
+
+  const reachCells =
+    new Set();
+
+
+  lines.forEach(
+    line => {
+
+
+      const missing =
+        line.filter(
+          index =>
+            !checked[index]
+        );
+
+
+      if (
+        missing.length === 1
+      ) {
+
+        reachCells.add(
+          missing[0]
+        );
+
+      }
+
+    }
+  );
+
+
+  /* 最後に開いたマス */
+
+  if (
+    lastIndex !== null &&
+    checked[lastIndex] &&
+    !bingoCells.has(
+      lastIndex
+    )
+  ) {
+
+    cells[lastIndex]
+      .classList
+      .add(
+        "last"
+      );
+
+  }
+
+
+  /* リーチ */
+
+  reachCells.forEach(
+    index => {
+
+      if (
+        !checked[index] &&
+        !bingoCells.has(
+          index
+        )
+      ) {
+
+        cells[index]
+          .classList
+          .add(
+            "reach"
+          );
+
+      }
+
+    }
+  );
+
+
+  /* BINGO */
+
+  bingoCells.forEach(
+    index => {
+
+
+      cells[index]
+        .classList
+        .remove(
+          "last",
+          "reach"
+        );
+
+
+      cells[index]
+        .classList
+        .add(
+          "bingo-cell"
+        );
+
+    }
+  );
+
+
+  updateBingoText(
+    completedLines.length,
+    checked
+  );
+
+
+  updateNegiTargets();
+}
+
+
+/* ==================================================
+   BINGO文字
+================================================== */
+
+function updateBingoText(
+  bingoCount,
+  checked
+) {
+
+  const display =
+    document.getElementById(
+      "bingo"
+    );
+
+
+  if (
+    checked.every(
+      Boolean
+    )
+  ) {
+
+    display.textContent =
+      "🎉 ALL BINGO!! 🎉";
+
+  }
+
+  else if (
+    bingoCount === 0
+  ) {
+
+    display.textContent = "";
+
+  }
+
+  else if (
+    bingoCount === 1
+  ) {
+
+    display.textContent =
+      "🎉 BINGO! 🎉";
+
+  }
+
+  else {
+
+    display.textContent =
+      "🎉 " +
+      bingoCount +
+      " LINE! 🎉";
+
+  }
+}
+
+
+/* ==================================================
+   検索メニュー
+================================================== */
+
+function buildSearchMenu() {
+
+  const select =
+    document.getElementById(
+      "panelSearch"
+    );
+
+
+  const panelReadings = {
+
+    "アップル1":"あっぷる01",
+    "アップル2":"あっぷる02",
+    "アップル3":"あっぷる03",
+    "アップル4":"あっぷる04",
+
+    "麻布十番":"あざぶじゅうばん",
+    "雨配達":"あめはいたつ",
+
+    "和泉":"いずみ",
+    "上原":"うえはら",
+    "永福町":"えいふくちょう",
+
+    "大原":"おおはら",
+    "大森":"おおもり",
+    "大宮":"おおみや",
+    "大山":"おおやま",
+
+    "オートロック２個以上":
+      "おーとろっく02こいじょう",
+
+    "階段２F":"かいだん02",
+    "階段３F":"かいだん03",
+    "階段４F":"かいだん04",
+    "階段５F":"かいだん05",
+    "階段∞":"かいだんむげん",
+
+    "金子さん！":"かねこさん",
+    "神山町":"かみやまち",
+
+    "北沢":"きたざわ",
+    "北千束":"きたせんぞく",
+
+    "キャロット1":"きゃろっと01",
+    "キャロット2":"きゃろっと02",
+    "キャロット3":"きゃろっと03",
+    "キャロット4":"きゃろっと04",
+
+    "近距離0.5":"きんきょり00.5",
+
+    "五反田":"ごたんだ",
+    "戸建":"こだて",
+
+    "笹塚":"ささづか",
+    "三軒茶屋":"さんげんぢゃや",
+
+    "渋谷本町":"しぶやほんまち",
+    "下高井戸":"しもたかいど",
+    "自由が丘":"じゆうがおか",
+    "松濤":"しょうとう",
+    "新橋":"しんばし",
+    "千駄ヶ谷":"せんだがや",
+
+    "代田":"だいた",
+    "タワマン":"たわまん",
+
+    "千歳船橋":"ちとせふなばし",
+    "長距離3.8":"ちょうきょり03.8",
+
+    "店舗":"てんぽ",
+    "富ヶ谷":"とみがや",
+
+    "中野本町":"なかのほんちょう",
+
+    "西永福":"にしえいふく",
+    "西新宿":"にししんじゅく",
+    "西原":"にしはら",
+
+    "荷物１つ":"にもつ01",
+    "荷物２つ":"にもつ02",
+    "荷物３つ":"にもつ03",
+    "荷物４つ":"にもつ04",
+
+    "ネギ":"ねぎ",
+    "野田さん！":"のださん",
+
+    "配達なし":"はいたつなし",
+    "萩原さん！":"はぎわらさん",
+    "幡ヶ谷":"はたがや",
+    "初台":"はつだい",
+    "羽根木":"はねぎ",
+
+    "バナナ1":"ばなな01",
+    "バナナ2":"ばなな02",
+    "バナナ3":"ばなな03",
+    "バナナ4":"ばなな04",
+
+    "方南町":"ほうなんちょう",
+    "堀之内":"ほりのうち",
+
+    "松原":"まつばら",
+    "南青山":"みなみあおやま",
+    "南台":"みなみだい",
+
+    "元代々木":"もとよよぎ",
+    "持ち帰り":"もちかえり",
+
+    "矢田部さん！":"やたべさん",
+    "弥生町":"やよいちょう",
+
+    "代々木":"よよぎ",
+    "和田":"わだ"
+  };
+
+
+  const allItems = [
+    ...areaItems,
+    ...normalItems,
+    ...staffItems,
+    ...stationItems
+  ];
+
+
+  const uniqueItems =
+    [
+      ...new Set(
+        allItems
+      )
+    ];
+
+
+  uniqueItems.sort(
+    (a,b) => {
+
+
+      const readingA =
+        panelReadings[a] ||
+        a;
+
+
+      const readingB =
+        panelReadings[b] ||
+        b;
+
+
+      return readingA.localeCompare(
+        readingB,
+        "ja"
+      );
+
+    }
+  );
+
+
+  uniqueItems.forEach(
+    item => {
+
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        item;
+
+
+      option.textContent =
+        item;
+
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+}
+
+
+/* ==================================================
+   検索発光
+================================================== */
+
+function highlightSearch() {
+
+  const target =
+    document.getElementById(
+      "panelSearch"
+    ).value;
+
+
+  const cells =
+    document.querySelectorAll(
+      ".cell"
+    );
+
+
+  cells.forEach(
+    cell => {
+
+      cell.classList.remove(
+        "search-hit"
+      );
+
+    }
+  );
+
+
+  if (target === "") {
+    return;
+  }
+
+
+  cells.forEach(
+    cell => {
+
+      if (
+        cell.dataset.item ===
+        target
+      ) {
+
+        cell.classList.add(
+          "search-hit"
+        );
+
+      }
+
+    }
+  );
+}
+
+
+/* ==================================================
+   全データリセット
+================================================== */
+
+function resetEverything() {
+
+  const ok =
+    confirm(
+      "第5回ビンゴをすべてリセットしますか？\n\n" +
+      "カード・チェック・当たり回数・カード確定状態がすべて消えます。"
+    );
+
+
+  if (!ok) {
+    return;
+  }
+
+
+  /*
+    第5回のゲームデータだけ削除
+    音ON/OFF設定は残す
+  */
+
+  localStorage.removeItem(
+    BOARD_KEY
+  );
+
+  localStorage.removeItem(
+    CHECK_KEY
+  );
+
+  localStorage.removeItem(
+    LAST_KEY
+  );
+
+  localStorage.removeItem(
+    START_KEY
+  );
+
+  localStorage.removeItem(
+    LUCKY_KEY
+  );
+
+  localStorage.removeItem(
+    DRAWN_KEY
+  );
+
+
+  negiMode = false;
+
+
+  document.getElementById(
+    "panelSearch"
+  ).value = "";
+
+
+  generateNewBoard();
+
+
+  updateSoundDisplay();
+
+  updateNegiDisplay();
+}
+
+
+/* ==================================================
+   保存カード読み込み
+================================================== */
+
+function loadBoard() {
+
+  let boardData;
+  let checkedData;
+
+
+  try {
+
+    boardData =
+      JSON.parse(
+        localStorage.getItem(
+          BOARD_KEY
+        )
+      );
+
+
+    checkedData =
+      JSON.parse(
+        localStorage.getItem(
+          CHECK_KEY
+        )
+      );
+
+  }
+
+  catch (e) {
+
+    boardData = null;
+
+    checkedData = null;
+
+  }
+
+
+  if (
+    Array.isArray(
+      boardData
+    ) &&
+    boardData.length === 81 &&
+    Array.isArray(
+      checkedData
+    ) &&
+    checkedData.length === 81
+  ) {
+
+    checkedData[40] = true;
+
+
+    renderBoard(
+      boardData,
+      checkedData,
+      getLastIndex()
+    );
+
+  }
+
+  else {
+
+    generateNewBoard();
+
+  }
+}
+
+
+/* ==================================================
+   起動
+================================================== */
+
+buildSearchMenu();
+
+loadBoard();
+
+updateStartDisplay();
+
+updateLuckyCounter();
+
+updateSoundDisplay();
+
+updateNegiDisplay();
+
+</script>
+
+</body>
+</html>
