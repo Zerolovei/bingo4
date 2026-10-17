@@ -44,10 +44,6 @@ body {
     max(20px, env(safe-area-inset-bottom));
 }
 
-/* =========================
-   タイトル
-========================= */
-
 h1 {
   margin: 5px 0 4px;
   font-size: clamp(18px, 5vw, 29px);
@@ -58,10 +54,6 @@ h1 {
     0 3px 5px rgba(0,0,0,.9),
     0 0 10px rgba(0,0,0,.6);
 }
-
-/* =========================
-   上部ボタン
-========================= */
 
 .controls {
   display: flex;
@@ -152,10 +144,6 @@ button:active {
     );
 }
 
-/* =========================
-   当たりカウンター
-========================= */
-
 #luckyCounter {
   display: inline-block;
 
@@ -175,10 +163,6 @@ button:active {
   box-shadow:
     0 3px 8px rgba(0,0,0,.22);
 }
-
-/* =========================
-   検索
-========================= */
 
 .search-area {
   display: flex;
@@ -215,10 +199,6 @@ button:active {
   font-weight: bold;
 }
 
-/* =========================
-   BINGO文字
-========================= */
-
 #bingo {
   min-height: 34px;
 
@@ -238,10 +218,6 @@ button:active {
     0 3px 5px rgba(0,0,0,.95),
     0 0 12px rgba(255,0,100,.9);
 }
-
-/* =========================
-   盤面
-========================= */
 
 #board {
   display: grid;
@@ -268,10 +244,6 @@ button:active {
   backdrop-filter:
     blur(1.5px);
 }
-
-/* =========================
-   マス
-========================= */
 
 .cell {
   aspect-ratio: 1 / 1;
@@ -317,8 +289,6 @@ button:active {
   transform: scale(.92);
 }
 
-/* 達成済み */
-
 .cell.checked {
   background:
     rgba(48,190,95,.94);
@@ -328,8 +298,6 @@ button:active {
   text-shadow:
     0 1px 3px rgba(0,0,0,.65);
 }
-
-/* 最後 */
 
 .cell.last {
   background:
@@ -343,8 +311,6 @@ button:active {
     inset 0 0 0 2px rgba(255,255,255,.55),
     0 0 9px rgba(255,220,0,.8);
 }
-
-/* リーチ */
 
 .cell.reach {
   background:
@@ -360,8 +326,6 @@ button:active {
     0 0 9px rgba(157,92,255,.8);
 }
 
-/* BINGO */
-
 .cell.bingo-cell {
   background:
     rgba(255,61,155,.97);
@@ -375,8 +339,6 @@ button:active {
     inset 0 0 0 2px rgba(255,255,255,.45),
     0 0 10px rgba(255,40,145,.85);
 }
-
-/* FREE */
 
 .cell.free {
   background:
@@ -395,10 +357,6 @@ button:active {
     rgba(255,61,155,.97);
 }
 
-/* =========================
-   検索発光
-========================= */
-
 .cell.search-hit {
   position: relative;
 
@@ -414,10 +372,6 @@ button:active {
 
   z-index: 3;
 }
-
-/* =========================
-   ネギ遠隔発光
-========================= */
 
 .cell.negi-target {
   position: relative;
@@ -452,9 +406,7 @@ button:active {
   }
 }
 
-/* =========================
-   当たり演出
-========================= */
+/* 当たり演出 */
 
 #luckyOverlay {
   position: fixed;
@@ -575,9 +527,7 @@ button:active {
   }
 }
 
-/* =========================
-   BINGO演出
-========================= */
+/* BINGO演出 */
 
 #bingoOverlay {
   position: fixed;
@@ -679,9 +629,7 @@ button:active {
   }
 }
 
-/* =========================
-   リセット
-========================= */
+/* リセット */
 
 .reset-area {
   margin:
@@ -705,10 +653,6 @@ button:active {
 
   opacity: .8;
 }
-
-/* =========================
-   スマホ
-========================= */
 
 @media (max-width: 600px) {
 
@@ -808,7 +752,6 @@ button:active {
 
 </div>
 
-
 <!-- 当たり演出 -->
 
 <div id="luckyOverlay">
@@ -826,7 +769,6 @@ button:active {
 
 </div>
 
-
 <!-- BINGO演出 -->
 
 <div id="bingoOverlay">
@@ -837,7 +779,6 @@ button:active {
     alt="BINGO">
 
 </div>
-
 
 <!-- 音源 -->
 
@@ -852,7 +793,6 @@ button:active {
   preload="auto"
   src="sokuji.mp3">
 </audio>
-
 
 <script>
 
@@ -950,8 +890,8 @@ const staffItems = [
   ステーション
 
   ・最低4枚
-  ・最大8枚
-  ・同一ステーション重複OK
+  ・最高8枚
+  ・重複OK
 */
 
 const stationItems = [
@@ -968,6 +908,17 @@ const stationItems = [
 ];
 
 
+/*
+  ステーションを含まない候補。
+
+  ★重要
+  ステーション総数を先に決めたあと、
+  残りは必ずこのプールから選ぶ。
+
+  これによりステーションが
+  8枚を超えることは絶対にない。
+*/
+
 const nonStationPool = [
   ...areaItems,
   ...normalItems,
@@ -975,16 +926,11 @@ const nonStationPool = [
 ];
 
 
-const fullPool = [
-  ...nonStationPool,
-  ...stationItems
-];
-
-
 /* ==================================================
    保存キー
 
-   ※既存ユーザーを維持するため変更しない
+   既存参加者を維持するため
+   絶対に変更しない
 ================================================== */
 
 const BOARD_KEY =
@@ -1224,6 +1170,7 @@ function requestNewBoard() {
     return;
   }
 
+
   generateNewBoard();
 }
 
@@ -1231,14 +1178,16 @@ function requestNewBoard() {
 /* ==================================================
    新規カード生成
 
-   9×9 = 81マス
-   中央FREE
+   ★今回の重要変更
 
-   ・エリア最低30枚
-   ・ステーション最低4枚
-   ・ステーション最大8枚
-   ・ステーション重複OK
-   ・スタッフ最低1枚
+   ① エリア30枚を先に保証
+   ② ステーション総数を4～8枚で先に決定
+   ③ 決めた枚数だけステーションを入れる
+   ④ 残りはステーション無しの候補から抽選
+
+   → ステーションは必ず4～8枚
+   → 9枚以上には絶対ならない
+   → 同一ステーション重複OK
 ================================================== */
 
 function generateNewBoard() {
@@ -1247,7 +1196,7 @@ function generateNewBoard() {
 
 
   /*
-    まずエリア30枚を保証
+    ① エリア30枚保証
   */
 
   for (
@@ -1266,15 +1215,38 @@ function generateNewBoard() {
 
 
   /*
-    ステーション4枚を保証
+    ② ステーション総数を決定
 
-    重複OKなので
-    毎回独立抽選
+    Math.random() * 5
+      ↓
+    0～4
+
+    +4
+      ↓
+    4・5・6・7・8
+
+    のどれかになる。
+  */
+
+  const stationTotal =
+    4 +
+    Math.floor(
+      Math.random() * 5
+    );
+
+
+  /*
+    ③ 決めた枚数だけ
+       ステーションを入れる
+
+    毎回独立抽選なので
+    同じステーションが
+    複数枚あってOK。
   */
 
   for (
     let i = 0;
-    i < 4;
+    i < stationTotal;
     i++
   ) {
 
@@ -1288,69 +1260,24 @@ function generateNewBoard() {
 
 
   /*
-    現在のステーション枚数
+    ④ 残りを80枚になるまで追加
 
-    この時点では4
-  */
+    ★ここでは絶対に
+      stationItemsを使わない。
 
-  let stationCount = 4;
-
-
-  /*
-    残り46枚を抽選
-
-    ステーションが8枚未満なら
-    全候補から抽選。
-
-    8枚に到達したら
-    ステーションを除いた候補から抽選。
-
-    これで必ず
-    4～8枚になる。
+    だからステーション総数は
+    stationTotalから増えない。
   */
 
   while (
     selected.length < 80
   ) {
 
-    let item;
-
-
-    if (
-      stationCount >= 8
-    ) {
-
-      item =
-        randomFrom(
-          nonStationPool
-        );
-
-    }
-
-    else {
-
-      item =
-        randomFrom(
-          fullPool
-        );
-
-    }
-
-
     selected.push(
-      item
-    );
-
-
-    if (
-      stationItems.includes(
-        item
+      randomFrom(
+        nonStationPool
       )
-    ) {
-
-      stationCount++;
-
-    }
+    );
 
   }
 
@@ -1371,37 +1298,24 @@ function generateNewBoard() {
   if (!hasStaff) {
 
     /*
-      0～29 = エリア保証
-      30～33 = ステーション保証
+      エリア保証30枚と
+      ステーションを壊さないため、
 
-      ここは壊さず、
-      34～79から交換する。
-
-      ただしステーションを交換すると
-      最低4枚を割る可能性があるため、
-      ステーションではない場所を探す。
+      ステーションではなく、
+      先頭30枚でもない場所を
+      交換対象にする。
     */
 
     const replaceCandidates = [];
 
 
     for (
-      let i = 34;
+      let i = 30 + stationTotal;
       i < 80;
       i++
     ) {
 
-      if (
-        !stationItems.includes(
-          selected[i]
-        )
-      ) {
-
-        replaceCandidates.push(
-          i
-        );
-
-      }
+      replaceCandidates.push(i);
 
     }
 
@@ -1568,7 +1482,9 @@ function renderBoard(
         item;
 
 
-      if (index === 40) {
+      if (
+        index === 40
+      ) {
 
         cell.textContent =
           "FREE";
@@ -1592,10 +1508,6 @@ function renderBoard(
       }
 
 
-      /*
-        スタッフ3段表示
-      */
-
       else if (
         item ===
         "矢田部さんorクノウさん"
@@ -1615,7 +1527,9 @@ function renderBoard(
       }
 
 
-      if (index !== 40) {
+      if (
+        index !== 40
+      ) {
 
         cell.addEventListener(
           "click",
@@ -1665,7 +1579,7 @@ function handleCellClick(index) {
 
 
   /*
-    ネギ遠隔モード中
+    ネギ遠隔モード
   */
 
   if (negiMode) {
@@ -1699,10 +1613,12 @@ function handleCellClick(index) {
 
 
   /*
-    通常操作
+    通常
   */
 
-  if (checked[index]) {
+  if (
+    checked[index]
+  ) {
 
     checked[index] = false;
 
@@ -1781,8 +1697,7 @@ function openCell(index) {
 
 
   /*
-    そのマス初回だけ
-    1/6抽選
+    初回だけ1/6抽選
   */
 
   runLuckyDrawOnce(
@@ -1813,7 +1728,7 @@ function openCell(index) {
 
 
 /* ==================================================
-   ネギ遠隔モード
+   ネギ遠隔
 ================================================== */
 
 function toggleNegiMode() {
@@ -1880,11 +1795,6 @@ function updateNegiTargets() {
         "negi-target"
       );
 
-
-      /*
-        重複ステーションも
-        全部光る
-      */
 
       if (
         negiMode &&
@@ -1956,8 +1866,8 @@ function getDrawnCells() {
 /* ==================================================
    当たり抽選
 
-   1マス1回だけ
-   確率 1/6
+   1マスにつき1回
+   当たり確率 1/6
 ================================================== */
 
 function runLuckyDrawOnce(index) {
@@ -1966,8 +1876,12 @@ function runLuckyDrawOnce(index) {
     getDrawnCells();
 
 
-  if (drawn[index]) {
+  if (
+    drawn[index]
+  ) {
+
     return;
+
   }
 
 
@@ -2050,7 +1964,7 @@ function updateLuckyCounter() {
    通常
    → negi.png
 
-   5 / 10 / 15 / 20 ...
+   5・10・15・20……
    → kirakira.png
 ================================================== */
 
@@ -2209,7 +2123,9 @@ function isSoundOn() {
 
 function toggleSound() {
 
-  if (isSoundOn()) {
+  if (
+    isSoundOn()
+  ) {
 
     localStorage.setItem(
       SOUND_KEY,
@@ -2240,7 +2156,9 @@ function updateSoundDisplay() {
     );
 
 
-  if (isSoundOn()) {
+  if (
+    isSoundOn()
+  ) {
 
     button.textContent =
       "🔊 音ON";
@@ -2323,7 +2241,9 @@ function handleLineEvent(
     before.bingoCount
   ) {
 
-    if (isSoundOn()) {
+    if (
+      isSoundOn()
+    ) {
 
       playSound(
         "bingoSound"
@@ -2348,7 +2268,9 @@ function handleLineEvent(
     before.reachCount
   ) {
 
-    if (isSoundOn()) {
+    if (
+      isSoundOn()
+    ) {
 
       playSound(
         "reachSound"
@@ -2570,7 +2492,9 @@ function updateColors(
   );
 
 
-  /* 完成ライン */
+  /*
+    完成ライン
+  */
 
   const completedLines =
     lines.filter(
@@ -2600,7 +2524,9 @@ function updateColors(
   );
 
 
-  /* リーチ */
+  /*
+    リーチ
+  */
 
   const reachCells =
     new Set();
@@ -2631,7 +2557,9 @@ function updateColors(
   );
 
 
-  /* 最後 */
+  /*
+    最後に開いたマス
+  */
 
   if (
     lastIndex !== null &&
@@ -2650,7 +2578,9 @@ function updateColors(
   }
 
 
-  /* リーチ */
+  /*
+    リーチ
+  */
 
   reachCells.forEach(
     index => {
@@ -2674,7 +2604,9 @@ function updateColors(
   );
 
 
-  /* BINGO */
+  /*
+    BINGO
+  */
 
   bingoCells.forEach(
     index => {
@@ -3027,7 +2959,7 @@ function resetEverything() {
 
 
   /*
-    音設定だけ残す
+    音設定は残す
   */
 
   localStorage.removeItem(
@@ -3075,23 +3007,23 @@ function resetEverything() {
 /* ==================================================
    既存カード自動移行 ＋ 読み込み
 
-   既存参加者：
+   ★既存カードは盤面を作り直さない。
 
-   ・盤面そのもの維持
-   ・チェック維持
-   ・開始ロック維持
-   ・当たり回数維持
-   ・抽選済み状態維持
-   ・最後に開いたマス維持
+   維持するもの：
+   ・盤面
+   ・チェック
+   ・開始ロック
+   ・当たり回数
+   ・抽選済み記録
+   ・最後に開いたマス
 
-   古い
-   「矢田部さん！」
+   自動変更するもの：
+   矢田部さん！
        ↓
-   「矢田部さんorクノウさん」
+   矢田部さんorクノウさん
 
-   のみ自動変更。
-
-   ★既存カードのステーション枚数は変更しない
+   ★既存カードのステーション枚数は
+     4～8枚に強制変更しない。
 ================================================== */
 
 function loadBoard() {
@@ -3146,8 +3078,7 @@ function loadBoard() {
 
 
     /*
-      矢田部さんだけ
-      新表記へ変更
+      古い矢田部さん表記だけ変更
     */
 
     boardData =
@@ -3177,11 +3108,12 @@ function loadBoard() {
 
 
     /*
-      表記変更があった場合だけ
-      盤面を保存
+      表記変更があった場合のみ保存
     */
 
-    if (migrated) {
+    if (
+      migrated
+    ) {
 
       localStorage.setItem(
         BOARD_KEY,
@@ -3209,11 +3141,7 @@ function loadBoard() {
 
 
     /*
-      そのまま表示
-
-      既存カードの
-      ステーション枚数には
-      一切手を加えない
+      既存状態のまま表示
     */
 
     renderBoard(
@@ -3226,8 +3154,8 @@ function loadBoard() {
 
 
   /*
-    カードを持っていない人だけ
-    新仕様で生成
+    カードをまだ持っていない人だけ
+    新しい4～8枚ルールで生成
   */
 
   else {
