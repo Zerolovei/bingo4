@@ -68,7 +68,6 @@ h1 {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-
   gap: 6px;
   margin: 4px auto;
 }
@@ -76,7 +75,6 @@ h1 {
 button {
   border: none;
   border-radius: 999px;
-
   padding: 9px 13px;
 
   font-size: 11px;
@@ -201,7 +199,6 @@ button:active {
 
 #panelSearch {
   max-width: 195px;
-
   padding: 6px 8px;
 
   border:
@@ -235,7 +232,6 @@ button:active {
     clamp(20px, 6vw, 34px);
 
   font-weight: 900;
-
   color: white;
 
   text-shadow:
@@ -279,7 +275,6 @@ button:active {
 
 .cell {
   aspect-ratio: 1 / 1;
-
   min-width: 0;
 
   display: flex;
@@ -287,7 +282,6 @@ button:active {
   align-items: center;
 
   text-align: center;
-
   padding: 1px;
 
   border-radius: 5px;
@@ -335,7 +329,7 @@ button:active {
     0 1px 3px rgba(0,0,0,.65);
 }
 
-/* 最後に開いたマス */
+/* 最後 */
 
 .cell.last {
   background:
@@ -402,7 +396,7 @@ button:active {
 }
 
 /* =========================
-   検索青発光
+   検索発光
 ========================= */
 
 .cell.search-hit {
@@ -422,7 +416,7 @@ button:active {
 }
 
 /* =========================
-   ネギ遠隔対象
+   ネギ遠隔発光
 ========================= */
 
 .cell.negi-target {
@@ -582,7 +576,7 @@ button:active {
 }
 
 /* =========================
-   BINGO 小林さん演出
+   BINGO演出
 ========================= */
 
 #bingoOverlay {
@@ -662,40 +656,31 @@ button:active {
 @keyframes bingoScreenFlash {
   0% {
     opacity: 0;
-
-    background:
-      rgba(255,255,255,.95);
+    background: rgba(255,255,255,.95);
   }
 
   10% {
     opacity: 1;
-
-    background:
-      rgba(255,255,255,.75);
+    background: rgba(255,255,255,.75);
   }
 
   25% {
-    background:
-      rgba(255,220,60,.22);
+    background: rgba(255,220,60,.22);
   }
 
   80% {
     opacity: 1;
-
-    background:
-      rgba(0,0,0,.18);
+    background: rgba(0,0,0,.18);
   }
 
   100% {
     opacity: 0;
-
-    background:
-      rgba(0,0,0,0);
+    background: rgba(0,0,0,0);
   }
 }
 
 /* =========================
-   全データリセット
+   リセット
 ========================= */
 
 .reset-area {
@@ -757,9 +742,7 @@ button:active {
 
 <body>
 
-<h1>
-  第5回ARK3ビンゴ！Ⅴ
-</h1>
+<h1>第5回ARK3ビンゴ！Ⅴ</h1>
 
 <div class="controls">
 
@@ -963,8 +946,12 @@ const staffItems = [
 ];
 
 
-/* ステーション
-   重複OK
+/*
+  ステーション
+
+  ・最低4枚
+  ・最大8枚
+  ・同一ステーション重複OK
 */
 
 const stationItems = [
@@ -981,19 +968,23 @@ const stationItems = [
 ];
 
 
-const fullPool = [
+const nonStationPool = [
   ...areaItems,
   ...normalItems,
-  ...staffItems,
+  ...staffItems
+];
+
+
+const fullPool = [
+  ...nonStationPool,
   ...stationItems
 ];
 
 
 /* ==================================================
-   第5回専用 保存キー
+   保存キー
 
-   ※既存参加者のデータを維持するため
-     キーは変更しない
+   ※既存ユーザーを維持するため変更しない
 ================================================== */
 
 const BOARD_KEY =
@@ -1128,7 +1119,7 @@ function shuffle(array) {
 
 
 /* ==================================================
-   このカードで開始
+   開始ロック
 ================================================== */
 
 function isStarted() {
@@ -1238,12 +1229,14 @@ function requestNewBoard() {
 
 
 /* ==================================================
-   新規カード
+   新規カード生成
 
-   ・9×9
-   ・中央FREE
+   9×9 = 81マス
+   中央FREE
+
    ・エリア最低30枚
    ・ステーション最低4枚
+   ・ステーション最大8枚
    ・ステーション重複OK
    ・スタッフ最低1枚
 ================================================== */
@@ -1253,7 +1246,9 @@ function generateNewBoard() {
   const selected = [];
 
 
-  /* エリア30枚保証 */
+  /*
+    まずエリア30枚を保証
+  */
 
   for (
     let i = 0;
@@ -1271,8 +1266,10 @@ function generateNewBoard() {
 
 
   /*
-    ステーション最低4枚保証
-    重複OK
+    ステーション4枚を保証
+
+    重複OKなので
+    毎回独立抽選
   */
 
   for (
@@ -1291,24 +1288,76 @@ function generateNewBoard() {
 
 
   /*
-    残りを全候補から抽選
-    ステーションも重複OK
+    現在のステーション枚数
+
+    この時点では4
+  */
+
+  let stationCount = 4;
+
+
+  /*
+    残り46枚を抽選
+
+    ステーションが8枚未満なら
+    全候補から抽選。
+
+    8枚に到達したら
+    ステーションを除いた候補から抽選。
+
+    これで必ず
+    4～8枚になる。
   */
 
   while (
     selected.length < 80
   ) {
 
+    let item;
+
+
+    if (
+      stationCount >= 8
+    ) {
+
+      item =
+        randomFrom(
+          nonStationPool
+        );
+
+    }
+
+    else {
+
+      item =
+        randomFrom(
+          fullPool
+        );
+
+    }
+
+
     selected.push(
-      randomFrom(
-        fullPool
-      )
+      item
     );
+
+
+    if (
+      stationItems.includes(
+        item
+      )
+    ) {
+
+      stationCount++;
+
+    }
 
   }
 
 
-  /* スタッフ最低1枚保証 */
+  /*
+    スタッフ最低1枚保証
+  */
 
   const hasStaff =
     selected.some(
@@ -1322,33 +1371,71 @@ function generateNewBoard() {
   if (!hasStaff) {
 
     /*
-      0～29：エリア保証
-      30～33：ステーション保証
+      0～29 = エリア保証
+      30～33 = ステーション保証
 
-      34～79から交換
+      ここは壊さず、
+      34～79から交換する。
+
+      ただしステーションを交換すると
+      最低4枚を割る可能性があるため、
+      ステーションではない場所を探す。
     */
 
-    const replaceIndex =
-      34 +
-      Math.floor(
-        Math.random() * 46
-      );
+    const replaceCandidates = [];
 
 
-    selected[replaceIndex] =
-      randomFrom(
-        staffItems
-      );
+    for (
+      let i = 34;
+      i < 80;
+      i++
+    ) {
+
+      if (
+        !stationItems.includes(
+          selected[i]
+        )
+      ) {
+
+        replaceCandidates.push(
+          i
+        );
+
+      }
+
+    }
+
+
+    if (
+      replaceCandidates.length > 0
+    ) {
+
+      const replaceIndex =
+        randomFrom(
+          replaceCandidates
+        );
+
+
+      selected[replaceIndex] =
+        randomFrom(
+          staffItems
+        );
+
+    }
 
   }
 
 
-  /* 全体シャッフル */
+  /*
+    全体をシャッフル
+  */
 
   shuffle(selected);
 
 
-  /* 中央FREE */
+  /*
+    中央にFREE
+  */
 
   selected.splice(
     40,
@@ -1366,7 +1453,7 @@ function generateNewBoard() {
 
 
   /*
-    各マスの当たり抽選済み記録
+    当たり抽選済み管理
   */
 
   const drawn =
@@ -1376,6 +1463,10 @@ function generateNewBoard() {
 
   drawn[40] = true;
 
+
+  /*
+    保存
+  */
 
   localStorage.setItem(
     BOARD_KEY,
@@ -1501,6 +1592,10 @@ function renderBoard(
       }
 
 
+      /*
+        スタッフ3段表示
+      */
+
       else if (
         item ===
         "矢田部さんorクノウさん"
@@ -1570,7 +1665,7 @@ function handleCellClick(index) {
 
 
   /*
-    ネギ遠隔モード
+    ネギ遠隔モード中
   */
 
   if (negiMode) {
@@ -1595,6 +1690,7 @@ function handleCellClick(index) {
       updateNegiDisplay();
 
       updateNegiTargets();
+
     }
 
 
@@ -1650,7 +1746,7 @@ function handleCellClick(index) {
 
 
 /* ==================================================
-   未達成 → 達成
+   マスを開く
 ================================================== */
 
 function openCell(index) {
@@ -1685,7 +1781,7 @@ function openCell(index) {
 
 
   /*
-    1マスにつき初回だけ
+    そのマス初回だけ
     1/6抽選
   */
 
@@ -1717,7 +1813,7 @@ function openCell(index) {
 
 
 /* ==================================================
-   ネギ遠隔
+   ネギ遠隔モード
 ================================================== */
 
 function toggleNegiMode() {
@@ -1784,6 +1880,11 @@ function updateNegiTargets() {
         "negi-target"
       );
 
+
+      /*
+        重複ステーションも
+        全部光る
+      */
 
       if (
         negiMode &&
@@ -1855,7 +1956,7 @@ function getDrawnCells() {
 /* ==================================================
    当たり抽選
 
-   1マスにつき初回のみ
+   1マス1回だけ
    確率 1/6
 ================================================== */
 
@@ -1882,7 +1983,7 @@ function runLuckyDrawOnce(index) {
 
 
   /*
-    当たり確率 1/6
+    1/6
   */
 
   const hit =
@@ -1946,10 +2047,10 @@ function updateLuckyCounter() {
 /* ==================================================
    当たり演出
 
-   1～4回
+   通常
    → negi.png
 
-   5・10・15・20……
+   5 / 10 / 15 / 20 ...
    → kirakira.png
 ================================================== */
 
@@ -2047,7 +2148,7 @@ function showLuckyAnimation(count) {
 
 
 /* ==================================================
-   BINGO 小林さん演出
+   BINGO演出
 ================================================== */
 
 function showBingoAnimation() {
@@ -2091,7 +2192,7 @@ function showBingoAnimation() {
 
 
 /* ==================================================
-   音ON/OFF
+   音
 ================================================== */
 
 function isSoundOn() {
@@ -2177,7 +2278,9 @@ function getLineState(checked) {
         ).length;
 
 
-      if (checkedCount === 9) {
+      if (
+        checkedCount === 9
+      ) {
 
         bingoCount++;
 
@@ -2203,7 +2306,7 @@ function getLineState(checked) {
 
 
 /* ==================================================
-   リーチ / BINGO イベント
+   リーチ / BINGO
 ================================================== */
 
 function handleLineEvent(
@@ -2212,7 +2315,7 @@ function handleLineEvent(
 ) {
 
   /*
-    新しいBINGO
+    BINGO優先
   */
 
   if (
@@ -2237,7 +2340,7 @@ function handleLineEvent(
 
 
   /*
-    新しいリーチ
+    リーチ
   */
 
   if (
@@ -2383,8 +2486,12 @@ function getLastIndex() {
     );
 
 
-  if (value === null) {
+  if (
+    value === null
+  ) {
+
     return null;
+
   }
 
 
@@ -2438,7 +2545,9 @@ function updateColors(
       );
 
 
-      if (index === 40) {
+      if (
+        index === 40
+      ) {
 
         cell.classList.add(
           "free",
@@ -2522,7 +2631,7 @@ function updateColors(
   );
 
 
-  /* 最後に開いたマス */
+  /* 最後 */
 
   if (
     lastIndex !== null &&
@@ -2654,7 +2763,7 @@ function updateBingoText(
 
 
 /* ==================================================
-   検索メニュー
+   検索
 ================================================== */
 
 function buildSearchMenu() {
@@ -2710,9 +2819,10 @@ function buildSearchMenu() {
     "戸建":"こだて",
 
     "笹塚":"ささづか",
-    "塩浜":"しおはま",
 
     "三軒茶屋":"さんげんぢゃや",
+
+    "塩浜":"しおはま",
 
     "渋谷本町":"しぶやほんまち",
     "下高井戸":"しもたかいど",
@@ -2870,8 +2980,12 @@ function highlightSearch() {
   );
 
 
-  if (target === "") {
+  if (
+    target === ""
+  ) {
+
     return;
+
   }
 
 
@@ -2913,8 +3027,7 @@ function resetEverything() {
 
 
   /*
-    音設定以外の
-    第5回データを削除
+    音設定だけ残す
   */
 
   localStorage.removeItem(
@@ -2962,18 +3075,23 @@ function resetEverything() {
 /* ==================================================
    既存カード自動移行 ＋ 読み込み
 
-   重要：
-   既存のカード・チェック・当たり回数・
-   開始ロック・抽選済み状態を維持する。
+   既存参加者：
+
+   ・盤面そのもの維持
+   ・チェック維持
+   ・開始ロック維持
+   ・当たり回数維持
+   ・抽選済み状態維持
+   ・最後に開いたマス維持
 
    古い
    「矢田部さん！」
-        ↓
+       ↓
    「矢田部さんorクノウさん」
 
-   だけ自動変更。
+   のみ自動変更。
 
-   塩浜は既存カードには強制追加しない。
+   ★既存カードのステーション枚数は変更しない
 ================================================== */
 
 function loadBoard() {
@@ -3010,7 +3128,7 @@ function loadBoard() {
 
 
   /*
-    既存の正常なカード
+    既存カードあり
   */
 
   if (
@@ -3029,7 +3147,7 @@ function loadBoard() {
 
     /*
       矢田部さんだけ
-      新表記へ自動移行
+      新表記へ変更
     */
 
     boardData =
@@ -3059,8 +3177,8 @@ function loadBoard() {
 
 
     /*
-      変更があったときだけ
-      盤面を上書き保存
+      表記変更があった場合だけ
+      盤面を保存
     */
 
     if (migrated) {
@@ -3076,7 +3194,7 @@ function loadBoard() {
 
 
     /*
-      FREEだけは必ずON
+      FREEは必ずON
     */
 
     checkedData[40] = true;
@@ -3091,7 +3209,11 @@ function loadBoard() {
 
 
     /*
-      既存の状態のまま表示
+      そのまま表示
+
+      既存カードの
+      ステーション枚数には
+      一切手を加えない
     */
 
     renderBoard(
@@ -3104,8 +3226,8 @@ function loadBoard() {
 
 
   /*
-    保存カードが存在しない場合のみ
-    新規生成
+    カードを持っていない人だけ
+    新仕様で生成
   */
 
   else {
