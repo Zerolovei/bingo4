@@ -813,8 +813,6 @@ button:active {
 
 <div id="board"></div>
 
-<!-- リセット -->
-
 <div class="reset-area">
 
   <button
@@ -828,9 +826,7 @@ button:active {
 </div>
 
 
-<!-- =========================
-     当たり演出
-========================= -->
+<!-- 当たり演出 -->
 
 <div id="luckyOverlay">
 
@@ -848,9 +844,7 @@ button:active {
 </div>
 
 
-<!-- =========================
-     BINGO 小林さん
-========================= -->
+<!-- BINGO演出 -->
 
 <div id="bingoOverlay">
 
@@ -862,9 +856,7 @@ button:active {
 </div>
 
 
-<!-- =========================
-     音源
-========================= -->
+<!-- 音源 -->
 
 <audio
   id="reachSound"
@@ -966,12 +958,14 @@ const normalItems = [
 const staffItems = [
   "野田さん！",
   "金子さん！",
-  "矢田部さん！",
+  "矢田部さんorクノウさん",
   "萩原さん！"
 ];
 
 
-/* ステーション */
+/* ステーション
+   重複OK
+*/
 
 const stationItems = [
   "五反田",
@@ -982,7 +976,8 @@ const stationItems = [
   "自由が丘",
   "北千束",
   "大森",
-  "千歳船橋"
+  "千歳船橋",
+  "塩浜"
 ];
 
 
@@ -996,6 +991,9 @@ const fullPool = [
 
 /* ==================================================
    第5回専用 保存キー
+
+   ※既存参加者のデータを維持するため
+     キーは変更しない
 ================================================== */
 
 const BOARD_KEY =
@@ -1033,7 +1031,6 @@ let bingoAnimationTimer = null;
 
 /* ==================================================
    9×9 BINGOライン
-   横9 + 縦9 + 斜め2 = 20
 ================================================== */
 
 const lines = [];
@@ -1246,8 +1243,8 @@ function requestNewBoard() {
    ・9×9
    ・中央FREE
    ・エリア最低30枚
-   ・ステーション最低4種類
-   ・同一ステーション重複なし
+   ・ステーション最低4枚
+   ・ステーション重複OK
    ・スタッフ最低1枚
 ================================================== */
 
@@ -1273,70 +1270,39 @@ function generateNewBoard() {
   }
 
 
-  /* ステーション最低4種類保証 */
+  /*
+    ステーション最低4枚保証
+    重複OK
+  */
 
-  const guaranteedStations =
-    shuffle(
-      [...stationItems]
-    ).slice(
-      0,
-      4
+  for (
+    let i = 0;
+    i < 4;
+    i++
+  ) {
+
+    selected.push(
+      randomFrom(
+        stationItems
+      )
     );
 
-
-  selected.push(
-    ...guaranteedStations
-  );
+  }
 
 
-  const usedStations =
-    new Set(
-      guaranteedStations
-    );
-
-
-  /* 残りを全候補から抽選 */
+  /*
+    残りを全候補から抽選
+    ステーションも重複OK
+  */
 
   while (
     selected.length < 80
   ) {
 
-    const picked =
+    selected.push(
       randomFrom(
         fullPool
-      );
-
-
-    /*
-      ステーションは
-      同じものを2枚入れない
-    */
-
-    if (
-      stationItems.includes(
-        picked
       )
-    ) {
-
-      if (
-        usedStations.has(
-          picked
-        )
-      ) {
-
-        continue;
-      }
-
-
-      usedStations.add(
-        picked
-      );
-
-    }
-
-
-    selected.push(
-      picked
     );
 
   }
@@ -1356,10 +1322,10 @@ function generateNewBoard() {
   if (!hasStaff) {
 
     /*
-      先頭30枚＝エリア保証
-      30〜33＝ステーション保証
+      0～29：エリア保証
+      30～33：ステーション保証
 
-      34〜79から交換
+      34～79から交換
     */
 
     const replaceIndex =
@@ -1377,7 +1343,7 @@ function generateNewBoard() {
   }
 
 
-  /* 全体をシャッフル */
+  /* 全体シャッフル */
 
   shuffle(selected);
 
@@ -1400,15 +1366,13 @@ function generateNewBoard() {
 
 
   /*
-    各マスの抽選済み記録
+    各マスの当たり抽選済み記録
   */
 
   const drawn =
     new Array(81)
       .fill(false);
 
-
-  /* FREEでは抽選しない */
 
   drawn[40] = true;
 
@@ -1537,6 +1501,17 @@ function renderBoard(
       }
 
 
+      else if (
+        item ===
+        "矢田部さんorクノウさん"
+      ) {
+
+        cell.innerHTML =
+          "矢田部さん<br>or<br>クノウさん";
+
+      }
+
+
       else {
 
         cell.textContent =
@@ -1595,7 +1570,7 @@ function handleCellClick(index) {
 
 
   /*
-    ネギ遠隔モード中
+    ネギ遠隔モード
   */
 
   if (negiMode) {
@@ -1684,10 +1659,6 @@ function openCell(index) {
     getChecked();
 
 
-  /*
-    変更前のライン状態
-  */
-
   const beforeState =
     getLineState(
       checked
@@ -1715,7 +1686,7 @@ function openCell(index) {
 
   /*
     1マスにつき初回だけ
-    25%抽選
+    1/6抽選
   */
 
   runLuckyDrawOnce(
@@ -1729,19 +1700,11 @@ function openCell(index) {
   );
 
 
-  /*
-    変更後のライン状態
-  */
-
   const afterState =
     getLineState(
       checked
     );
 
-
-  /*
-    リーチ/BINGOイベント
-  */
 
   handleLineEvent(
     beforeState,
@@ -1842,7 +1805,7 @@ function updateNegiTargets() {
 
 
 /* ==================================================
-   ラッキー抽選
+   抽選済み記録
 ================================================== */
 
 function getDrawnCells() {
@@ -1889,16 +1852,18 @@ function getDrawnCells() {
 }
 
 
+/* ==================================================
+   当たり抽選
+
+   1マスにつき初回のみ
+   確率 1/6
+================================================== */
+
 function runLuckyDrawOnce(index) {
 
   const drawn =
     getDrawnCells();
 
-
-  /*
-    同じマスでは
-    2回抽選しない
-  */
 
   if (drawn[index]) {
     return;
@@ -1917,11 +1882,11 @@ function runLuckyDrawOnce(index) {
 
 
   /*
-    当たり確率 1/4
+    当たり確率 1/6
   */
 
   const hit =
-    Math.random() < 0.25;
+    Math.random() < (1 / 6);
 
 
   if (!hit) {
@@ -1981,11 +1946,11 @@ function updateLuckyCounter() {
 /* ==================================================
    当たり演出
 
-   通常
-   → negi.png お嬢
+   1～4回
+   → negi.png
 
    5・10・15・20……
-   → kirakira.png くまねちゃん
+   → kirakira.png
 ================================================== */
 
 function showLuckyAnimation(count) {
@@ -2014,11 +1979,9 @@ function showLuckyAnimation(count) {
     );
 
 
-  /*
-    5回ごとにくまねちゃん
-  */
-
-  if (count % 5 === 0) {
+  if (
+    count % 5 === 0
+  ) {
 
     image.src =
       "kirakira.png";
@@ -2139,10 +2102,6 @@ function isSoundOn() {
     );
 
 
-  /*
-    初回はON
-  */
-
   return value !== "off";
 }
 
@@ -2224,7 +2183,9 @@ function getLineState(checked) {
 
       }
 
-      else if (checkedCount === 8) {
+      else if (
+        checkedCount === 8
+      ) {
 
         reachCount++;
 
@@ -2243,16 +2204,6 @@ function getLineState(checked) {
 
 /* ==================================================
    リーチ / BINGO イベント
-
-   新規リーチ
-   → syuuka.mp3
-
-   新規BINGO
-   → sokuji.mp3
-   → BINGO.png
-   → 画面発光
-
-   同時の場合はBINGO優先
 ================================================== */
 
 function handleLineEvent(
@@ -2759,6 +2710,8 @@ function buildSearchMenu() {
     "戸建":"こだて",
 
     "笹塚":"ささづか",
+    "塩浜":"しおはま",
+
     "三軒茶屋":"さんげんぢゃや",
 
     "渋谷本町":"しぶやほんまち",
@@ -2812,7 +2765,9 @@ function buildSearchMenu() {
     "元代々木":"もとよよぎ",
     "持ち帰り":"もちかえり",
 
-    "矢田部さん！":"やたべさん",
+    "矢田部さんorクノウさん":
+      "やたべさんおあくのうさん",
+
     "弥生町":"やよいちょう",
 
     "代々木":"よよぎ",
@@ -2958,8 +2913,8 @@ function resetEverything() {
 
 
   /*
-    第5回のゲームデータだけ削除
-    音ON/OFF設定は残す
+    音設定以外の
+    第5回データを削除
   */
 
   localStorage.removeItem(
@@ -3005,7 +2960,20 @@ function resetEverything() {
 
 
 /* ==================================================
-   保存カード読み込み
+   既存カード自動移行 ＋ 読み込み
+
+   重要：
+   既存のカード・チェック・当たり回数・
+   開始ロック・抽選済み状態を維持する。
+
+   古い
+   「矢田部さん！」
+        ↓
+   「矢田部さんorクノウさん」
+
+   だけ自動変更。
+
+   塩浜は既存カードには強制追加しない。
 ================================================== */
 
 function loadBoard() {
@@ -3036,11 +3004,14 @@ function loadBoard() {
   catch (e) {
 
     boardData = null;
-
     checkedData = null;
 
   }
 
+
+  /*
+    既存の正常なカード
+  */
 
   if (
     Array.isArray(
@@ -3053,8 +3024,75 @@ function loadBoard() {
     checkedData.length === 81
   ) {
 
+    let migrated = false;
+
+
+    /*
+      矢田部さんだけ
+      新表記へ自動移行
+    */
+
+    boardData =
+      boardData.map(
+        item => {
+
+
+          if (
+            item ===
+            "矢田部さん！"
+          ) {
+
+            migrated = true;
+
+
+            return (
+              "矢田部さんorクノウさん"
+            );
+
+          }
+
+
+          return item;
+
+        }
+      );
+
+
+    /*
+      変更があったときだけ
+      盤面を上書き保存
+    */
+
+    if (migrated) {
+
+      localStorage.setItem(
+        BOARD_KEY,
+        JSON.stringify(
+          boardData
+        )
+      );
+
+    }
+
+
+    /*
+      FREEだけは必ずON
+    */
+
     checkedData[40] = true;
 
+
+    localStorage.setItem(
+      CHECK_KEY,
+      JSON.stringify(
+        checkedData
+      )
+    );
+
+
+    /*
+      既存の状態のまま表示
+    */
 
     renderBoard(
       boardData,
@@ -3063,6 +3101,12 @@ function loadBoard() {
     );
 
   }
+
+
+  /*
+    保存カードが存在しない場合のみ
+    新規生成
+  */
 
   else {
 
